@@ -6,6 +6,7 @@ const app = express();
 // Basic Configuration
 const port = process.env.PORT || 3000;
 let urlCounter = 0;
+const urlDatabase = {};
 
 app.use(cors());
 
@@ -29,11 +30,22 @@ app.post("/api/shorturl", (req, res) => {
 
   if(urlRegex.test(url)){
     urlCounter++;
-    const short_url = urlCounter;
+    urlDatabase[urlCounter] = url;
 
     res.json({ original_url: url, short_url: urlCounter});
   } else {
     res.json({"error": "invalid url"});
+  }
+});
+
+app.get("/api/shorturl/:short_url", (req, res) => {
+  const shortUrl = req.params.short_url;
+  const originalUrl = urlDatabase[shortUrl];
+
+  if (originalUrl) {
+    res.redirect(originalUrl);
+  } else {
+    res.json({ error: "No short URL found" });
   }
 });
 
